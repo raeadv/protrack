@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>protrack</title>
+</head>
+
+<body class="h-screen w-screen">
+  <div id="root" class="h-screen w-screen"></div>
+  {{ if .IsDev }}
+  <!-- Development: Load from Vite dev server -->
+  <script type="module">
+    import RefreshRuntime from 'http://localhost:3000/@react-refresh'
+    RefreshRuntime.injectIntoGlobalHook(window)
+    window.$RefreshReg$ = () => { }
+    window.$RefreshSig$ = () => (type) => type
+    window.__vite_plugin_react_preamble_installed__ = true
+  </script>
+
+  <script type="module" src="http://localhost:3000/@vite/client"></script>
+  <script type="module" src="http://localhost:3000/src/main.jsx"></script> {{ else }}
+  <!-- Production: Load from built assets -->
+  <script type="module" src="/assets/{{ .MainJS }}"></script>
+  {{ end }}
+</body>
+
+</html>
