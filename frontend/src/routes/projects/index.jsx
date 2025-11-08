@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { apiClient } from '@/utils/client'
-import { ProjectForm } from '@/components/forms/ProjectForm'
+import { ProjectForm } from '@/components/forms/project/ProjectForm'
 import dayjs from 'dayjs'
 import { ProjectsTable } from '@/components/tables/ProjectsTable'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button, Modal } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { ArrowDown10 } from 'lucide-react'
+import { notifications } from '@mantine/notifications'
 
 export const Route = createFileRoute('/projects/')({
   component: RouteComponent,
@@ -17,17 +17,33 @@ function RouteComponent() {
   const [opened, { open, close }] = useDisclosure(false)
   const queryClient = useQueryClient()
 
-  const submitProject = async (formData) => {
+  const submitProject = async (formData, updateId = null) => {
 
-    const { data, status } = await apiClient.post('/projects', {
+    let apiUrl = '/projects'
+    if (updateId) {
+      apiUrl += '/' + updateId
+    }
+
+
+    const { data, status } = await apiClient.post(apiUrl, {
       ...formData,
       startDate: dayjs(formData.startDate).format('YYYY-MM-DD'),
       endDate: dayjs(formData.endDate).format('YYYY-MM-DD'),
-      status: 1
+      status: Number(formData.status),
     })
 
 
+    notifications.show({
+      color: "green",
+      title: "Success",
+      message: "Project" + (updateId ? " Updated" : " Submitted")
+    })
+
     queryClient.invalidateQueries({ queryKey: ['projects'] })
+    window.dispatchEvent(
+      new CustomEvent('resetProjectForm')
+    )
+    close()
 
   }
 
@@ -61,6 +77,12 @@ function RouteComponent() {
     const { status } = await apiClient.delete('/projects/' + id)
     if (status === 200) {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
+
+      notifications.show({
+        color: "yellow",
+        title: "Success",
+        message: "Data Deleted"
+      })
     }
 
 
@@ -76,7 +98,7 @@ function RouteComponent() {
     <Modal title="Project Form" opened={opened} onClose={close}>
       <ProjectForm onSubmit={(values, updateId) => {
         console.log("project form submitted", { values, updateId })
-        submitProject(values)
+        submitProject(values, updateId)
       }} />
     </Modal>
 

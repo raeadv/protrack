@@ -233,6 +233,17 @@ func (q *Queries) FindProject(ctx context.Context, id int64) (Project, error) {
 	return i, err
 }
 
+const findRole = `-- name: FindRole :one
+select id, name, description from roles where id = ? limit 1
+`
+
+func (q *Queries) FindRole(ctx context.Context, id int32) (Role, error) {
+	row := q.db.QueryRowContext(ctx, findRole, id)
+	var i Role
+	err := row.Scan(&i.ID, &i.Name, &i.Description)
+	return i, err
+}
+
 const findUser = `-- name: FindUser :one
 select id, name, username, password, phone, status from users where id = ? limit 1
 `
@@ -249,6 +260,40 @@ func (q *Queries) FindUser(ctx context.Context, id int64) (User, error) {
 		&i.Status,
 	)
 	return i, err
+}
+
+const getAssignments = `-- name: GetAssignments :many
+select id, user_id, object_ref, object_id, role_id, description from assignments
+`
+
+func (q *Queries) GetAssignments(ctx context.Context) ([]Assignment, error) {
+	rows, err := q.db.QueryContext(ctx, getAssignments)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Assignment
+	for rows.Next() {
+		var i Assignment
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.ObjectRef,
+			&i.ObjectID,
+			&i.RoleID,
+			&i.Description,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getProject = `-- name: GetProject :many
@@ -326,6 +371,94 @@ func (q *Queries) GetProjectsPaginated(ctx context.Context, arg GetProjectsPagin
 			&i.UserID,
 			&i.StartDate,
 			&i.EndDate,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRoles = `-- name: GetRoles :many
+select id, name, description from roles
+`
+
+func (q *Queries) GetRoles(ctx context.Context) ([]Role, error) {
+	rows, err := q.db.QueryContext(ctx, getRoles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(&i.ID, &i.Name, &i.Description); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getStatuses = `-- name: GetStatuses :many
+select id, name, description from statuses
+`
+
+func (q *Queries) GetStatuses(ctx context.Context) ([]Status, error) {
+	rows, err := q.db.QueryContext(ctx, getStatuses)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Status
+	for rows.Next() {
+		var i Status
+		if err := rows.Scan(&i.ID, &i.Name, &i.Description); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsers = `-- name: GetUsers :many
+select id, name, username, password, phone, status from users
+`
+
+func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Username,
+			&i.Password,
+			&i.Phone,
 			&i.Status,
 		); err != nil {
 			return nil, err

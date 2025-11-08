@@ -34,7 +34,7 @@ type Note struct {
 type Project struct {
 	ID          int64
 	Title       string
-	Description string
+	Description sql.NullString
 	UserID      sql.NullInt64
 	StartDate   sql.NullTime
 	EndDate     sql.NullTime

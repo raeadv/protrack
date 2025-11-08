@@ -52,6 +52,50 @@ func (p *ProjectApiRoutes) Setup(api *gin.RouterGroup) {
 
 	})
 
+	api.POST("/:id", func(c *gin.Context) {
+		targetId := c.Param("id")
+
+		id, err := strconv.ParseInt(targetId, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  "fail",
+				"message": "Invalid project ID",
+			})
+		}
+
+		var project ProjectForm
+		if err := c.ShouldBindJSON(&project); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		updates := database.UpdateProjectParams{
+			Title:       project.Title,
+			Description: sql.NullString{String: project.Description, Valid: project.Description != ""},
+			StartDate:   sql.NullTime{Time: project.StartDate.Time, Valid: !project.StartDate.IsZero()},
+			EndDate:     sql.NullTime{Time: project.EndDate.Time, Valid: !project.EndDate.IsZero()},
+			Status:      project.Status,
+			ID:          id,
+		}
+
+		res, err := p.db.UpdateProject(c.Request.Context(), updates)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Failed to get inserted ID",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "project created successfully",
+			"id":      id,
+			"project": res,
+		})
+
+	})
+
 	api.POST("/", func(c *gin.Context) {
 		var project ProjectForm
 
@@ -68,7 +112,7 @@ func (p *ProjectApiRoutes) Setup(api *gin.RouterGroup) {
 			Description: sql.NullString{String: project.Description, Valid: project.Description != ""},
 			StartDate:   sql.NullTime{Time: project.StartDate.Time, Valid: !project.StartDate.IsZero()},
 			EndDate:     sql.NullTime{Time: project.EndDate.Time, Valid: !project.EndDate.IsZero()},
-			Status:      project.Status,
+			Status:      int8(project.Status),
 		}
 
 		result, err := p.db.CreateProject(c.Request.Context(), params)
@@ -112,12 +156,12 @@ func (p *ProjectApiRoutes) Setup(api *gin.RouterGroup) {
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  "fail",
-				"message": "failed to delete project",
+				"message": "failed to get project by ID",
 			})
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"message": "project deleted successfully",
+			"message": "project fetched successfully",
 			"id":      targetId,
 		})
 
@@ -138,12 +182,12 @@ func (p *ProjectApiRoutes) Setup(api *gin.RouterGroup) {
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  "fail",
-				"message": "failed to delete project",
+				"message": "failed to fetch project",
 			})
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"message": "project deleted successfully",
+			"message": "project fetched successfully",
 			"project": project,
 		})
 

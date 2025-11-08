@@ -5,6 +5,8 @@ import "./index.css";
 
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
+import '@mantine/notifications/styles.css';
+
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 

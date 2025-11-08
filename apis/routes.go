@@ -17,7 +17,9 @@ func ApiRoute(db *database.DbConnection) *ApiRouteList {
 func (a *ApiRouteList) Setup(api *gin.RouterGroup) {
 
 	project := api.Group("/projects")
-
 	ProjectRoute(a.db).Setup(project)
+
+	resource := api.Group("/resources")
+	ResourcesRoute(a.db).Setup(resource)
 
 }

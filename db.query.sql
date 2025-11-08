@@ -2,6 +2,9 @@
 insert into users (name, username, password, phone) 
        values  ( ?, ?, ?, ? );
 
+-- name: GetUsers :many
+select * from users;
+
 -- name: FindUser :one
 select * from users where id = ? limit 1;
 
@@ -43,6 +46,9 @@ insert into tasks (title, description, start_date, end_date, status, project_id)
       -- name: FindTask :one
 select * from tasks where id = ? limit 1;
 
+      -- name: FindTaskByProjectId :many
+select * from tasks where project_id = ?;
+
 -- name: UpdateTask :execresult
 update tasks set title = ?, description = ?, start_date = ?, end_date = ?, status = ? 
        where id = ?;
@@ -71,6 +77,9 @@ insert into statuses (name, description)
       -- name: FindStatus :one
 select * from statuses where id = ? limit 1;
 
+-- name: GetStatuses :many
+select * from statuses;
+
 -- name: UpdateStatus :execresult
 update statuses set name = ?, description = ? where id = ?;
 
@@ -81,7 +90,10 @@ delete from statuses where id = ?;
 insert into roles (name, description) 
        values (?, ?);
 
-      -- name: FindRole :one
+-- name: GetRoles :many
+select * from roles;
+
+-- name: FindRole :one
 select * from roles where id = ? limit 1;
 
 -- name: UpdateRole :execresult
@@ -97,11 +109,19 @@ insert into assignments (user_id, object_ref, object_id, role_id, description)
       -- name: FindAssignment :one
 select * from assignments where id = ? limit 1;
 
+
+      -- name: GetAssignmentByRefs :many
+select * from assignments where object_ref = ? and object_id = ?;
+
 -- name: UpdateAssignment :execresult
 update assignments set user_id = ?, object_ref = ?, object_id = ?, role_id = ?, description = ? 
        where id = ?;
 
 -- name: DeleteAssignment :exec
 delete from assignments where id = ?;
+
+
+-- name: GetAssignments :many
+select * from assignments;
 
 

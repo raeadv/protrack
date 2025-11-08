@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import dayjs from 'dayjs'
 import { apiClient } from '@/utils/client'
 import { LoadingOverlay, Table, Box, Button } from '@mantine/core';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { TrashIcon, PencilIcon, CheckSquare2Icon } from 'lucide-react'
 import { Link } from '@tanstack/react-router';
 
@@ -17,10 +17,12 @@ export function ProjectsTable({ onDelete = null, onEdit = null }) {
       }
     })
 
+    // console.log(res)
+
     return res.data.projects
   }
 
-  const { error, data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: getProjects
   })
@@ -28,7 +30,7 @@ export function ProjectsTable({ onDelete = null, onEdit = null }) {
   const rows = data?.map((d) => (
     <Table.Tr key={d.ID}>
       <Table.Td>{d.Title}</Table.Td>
-      <Table.Td>{d.Description}</Table.Td>
+      <Table.Td>{d.Description.String}</Table.Td>
       <Table.Td>{dayjs(d.StartDate?.Time).format('DD-MM-YYYY')}</Table.Td>
       <Table.Td>{dayjs(d.EndDate?.Time).format('DD-MM-YYYY')}</Table.Td>
       <Table.Td>
